@@ -6,6 +6,11 @@ const canvas = ref(<HTMLCanvasElement>{})
 const canvasContext = computed(() => {
     return canvas.value.getContext("2d")
 })
+const mouseStatus = ref({
+  start: {x: 0, y: 0},
+  end: {x: 0, y: 0},
+  current: {x: 0, y: 0},
+})
 
 const onFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
@@ -45,11 +50,11 @@ const download = () => {
   console.log('ok')
 }
 
-const mousedown = () => {
+const mousedown = (e: MouseEvent) => {
 }
-const mouseup = () => {
+const mouseup = (e: MouseEvent) => {
 }
-const mousemove = () => {
+const mousemove = (e: MouseEvent) => {
 }
 </script>
 
