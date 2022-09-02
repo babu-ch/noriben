@@ -44,6 +44,13 @@ const clear = () => {
 const download = () => {
   console.log('ok')
 }
+
+const mousedown = () => {
+}
+const mouseup = () => {
+}
+const mousemove = () => {
+}
 </script>
 
 <template>
@@ -56,7 +63,11 @@ const download = () => {
   </div>
 
   <div id="canvas_container">
-    <canvas id="canvas" ref="canvas"></canvas>
+    <canvas id="canvas" ref="canvas"
+            @mousedown="mousedown"
+            @mouseup="mouseup"
+            @mousemove="mousemove"
+    ></canvas>
   </div>
 </template>
 
