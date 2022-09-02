@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 
 const isFileSelected = ref(false)
+const canvas = ref(<HTMLCanvasElement>{})
 
 const onFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
@@ -27,10 +28,9 @@ const renderPdf = async (pdf: any) => {
   const viewport = page.getViewport({scale: 1});
   console.error(page, viewport)
 
-  const canvas = <HTMLCanvasElement>document.getElementById("canvas")
-  const context = canvas.getContext("2d");
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
+  const context = canvas.value.getContext("2d");
+  canvas.value.height = viewport.height;
+  canvas.value.width = viewport.width;
 
 
   const renderContext = { canvasContext: context, viewport };
@@ -39,9 +39,8 @@ const renderPdf = async (pdf: any) => {
 
 const clear = () => {
   isFileSelected.value = false
-  const canvas = <HTMLCanvasElement>document.getElementById("canvas")
-  const context = canvas.getContext("2d")
-  context?.clearRect(0, 0, canvas.width, canvas.height)
+  const context = canvas.value.getContext("2d")
+  context?.clearRect(0, 0, canvas.value.width, canvas.value.height)
 }
 
 const download = () => {
@@ -59,7 +58,7 @@ const download = () => {
   </div>
 
   <div id="canvas_container">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" ref="canvas"></canvas>
   </div>
 </template>
 
