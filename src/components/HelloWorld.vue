@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {computed, ref} from 'vue'
 
 const isFileSelected = ref(false)
 const canvas = ref(<HTMLCanvasElement>{})
+const canvasContext = computed(() => {
+    return canvas.value.getContext("2d")
+})
 
 const onFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
@@ -23,24 +26,19 @@ const onFileChange = async (e: Event) => {
 }
 
 const renderPdf = async (pdf: any) => {
-  console.error(pdf)
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({scale: 1});
-  console.error(page, viewport)
 
-  const context = canvas.value.getContext("2d");
   canvas.value.height = viewport.height;
   canvas.value.width = viewport.width;
 
-
-  const renderContext = { canvasContext: context, viewport };
+  const renderContext = { canvasContext: canvasContext.value, viewport };
   await page.render(renderContext);
 }
 
 const clear = () => {
   isFileSelected.value = false
-  const context = canvas.value.getContext("2d")
-  context?.clearRect(0, 0, canvas.value.width, canvas.value.height)
+  canvasContext.value?.clearRect(0, 0, canvas.value.width, canvas.value.height)
 }
 
 const download = () => {
