@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from 'vue'
 
+const generatedPng = ref("")
 const isFileSelected = ref(false)
 const canvas = ref(<HTMLCanvasElement>{})
 const mouseStatus = {
   start: {x: 0, y: 0},
-  end: {x: 0, y: 0},
   current: {x: 0, y: 0},
   isDragging: false
 }
@@ -30,9 +30,7 @@ async function anim() {
   if (!canvasContext) {
     return
   }
-
-  canvasContext.fillStyle = "rgba(0,0,0,0)";
-  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
+  resetCanvas()
 
   if (pdfStatus.page) {
     await pdfStatus.page.render(pdfStatus.renderContext).promise
@@ -51,6 +49,15 @@ async function anim() {
     canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
   })
   requestAnimationFrame(anim)
+}
+
+const resetCanvas = () => {
+  const canvasContext = canvas.value.getContext("2d");
+  if (!canvasContext) {
+    return
+  }
+  canvasContext.fillStyle = "rgba(0,0,0,0)";
+  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
 }
 
 const onFileChange = async (e: Event) => {
@@ -84,17 +91,16 @@ const setPdfStatus = async (pdf: any) => {
   pdfStatus.renderContext = renderContext
 }
 
-const clear = () => {
-  const canvasContext = canvas.value.getContext("2d");
-  if (!canvasContext) {
-    return
-  }
+const reset = () => {
+  generatedPng.value = ""
   isFileSelected.value = false
-  canvasContext.clearRect(0, 0, canvas.value.width, canvas.value.height)
+  drawRects.splice(0)
+  pdfStatus.page = null
+  pdfStatus.renderContext = null
 }
 
-const download = () => {
-  console.log('ok')
+const toPng = () => {
+  generatedPng.value = canvas.value.toDataURL("image/png")
 }
 
 const mousedown = (e: MouseEvent) => {
@@ -105,14 +111,12 @@ const mousedown = (e: MouseEvent) => {
   mouseStatus.current.y = e.offsetY
 }
 const mouseup = (e: MouseEvent) => {
-  mouseStatus.end.x = e.offsetX
-  mouseStatus.end.y = e.offsetY
   mouseStatus.isDragging = false
   drawRects.push(<Rect>{
     startX: mouseStatus.start.x,
     startY: mouseStatus.start.y,
-    endX: mouseStatus.end.x,
-    endY: mouseStatus.end.y,
+    endX: e.offsetX,
+    endY: e.offsetY,
   })
 }
 const mousemove = (e: MouseEvent) => {
@@ -126,11 +130,15 @@ const mousemove = (e: MouseEvent) => {
     <input type="file" @change="onFileChange">
   </div>
   <div v-else>
-    <button @click="clear">clear</button>
-    <button @click="download">download</button>
+    <button @click="reset">reset</button>
+    <button @click="toPng">to png</button>
   </div>
 
-  <canvas id="canvas" ref="canvas"
+  <div v-if="generatedPng.length">
+    <p>↓PNG↓</p>
+    <img :src="generatedPng" alt="">
+  </div>
+  <canvas id="canvas" ref="canvas" v-show="!generatedPng.length && isFileSelected"
           @mousedown="mousedown"
           @mouseup="mouseup"
           @mousemove="mousemove"
