@@ -51,10 +51,16 @@ const download = () => {
 }
 
 const mousedown = (e: MouseEvent) => {
+  mouseStatus.value.start.x = e.offsetX
+  mouseStatus.value.start.y = e.offsetY
 }
 const mouseup = (e: MouseEvent) => {
+  mouseStatus.value.end.x = e.offsetX
+  mouseStatus.value.end.y = e.offsetY
 }
 const mousemove = (e: MouseEvent) => {
+  mouseStatus.value.current.x = e.offsetX
+  mouseStatus.value.current.y = e.offsetY
 }
 </script>
 
