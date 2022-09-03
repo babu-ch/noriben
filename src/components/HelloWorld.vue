@@ -1,16 +1,48 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 
 const isFileSelected = ref(false)
 const canvas = ref(<HTMLCanvasElement>{})
-const canvasContext = computed(() => {
-    return canvas.value.getContext("2d")
-})
-const mouseStatus = ref({
+const mouseStatus = {
   start: {x: 0, y: 0},
   end: {x: 0, y: 0},
   current: {x: 0, y: 0},
+  isDragging: false
+}
+interface Rect {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+const drawRects: Rect[] = [];
+
+onMounted(() => {
+  anim();
 })
+function anim() {
+  const canvasContext = canvas.value.getContext("2d");
+  if (!canvasContext) {
+    return
+  }
+  requestAnimationFrame(anim);
+
+  canvasContext.fillStyle = "rgba(0,0,0,0.05)";
+  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
+
+  canvasContext.fillStyle = "rgb(0, 0, 255)";
+  if (mouseStatus.isDragging) {
+    const startX = mouseStatus.start.x
+    const startY = mouseStatus.start.y
+    const currentX = mouseStatus.current.x
+    const currentY = mouseStatus.current.y
+    canvasContext.fillRect( startX, startY, currentX - startX, currentY - startY )
+  }
+
+  drawRects.forEach((rect) => {
+    canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
+  })
+}
 
 const onFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
@@ -31,19 +63,24 @@ const onFileChange = async (e: Event) => {
 }
 
 const renderPdf = async (pdf: any) => {
+  const canvasContext = canvas.value.getContext("2d");
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({scale: 1});
 
   canvas.value.height = viewport.height;
   canvas.value.width = viewport.width;
 
-  const renderContext = { canvasContext: canvasContext.value, viewport };
+  const renderContext = { canvasContext: canvasContext, viewport };
   await page.render(renderContext);
 }
 
 const clear = () => {
+  const canvasContext = canvas.value.getContext("2d");
+  if (!canvasContext) {
+    return
+  }
   isFileSelected.value = false
-  canvasContext.value?.clearRect(0, 0, canvas.value.width, canvas.value.height)
+  canvasContext.clearRect(0, 0, canvas.value.width, canvas.value.height)
 }
 
 const download = () => {
@@ -51,16 +88,26 @@ const download = () => {
 }
 
 const mousedown = (e: MouseEvent) => {
-  mouseStatus.value.start.x = e.offsetX
-  mouseStatus.value.start.y = e.offsetY
+  mouseStatus.isDragging = true
+  mouseStatus.start.x = e.offsetX
+  mouseStatus.start.y = e.offsetY
+  mouseStatus.current.x = e.offsetX
+  mouseStatus.current.y = e.offsetY
 }
 const mouseup = (e: MouseEvent) => {
-  mouseStatus.value.end.x = e.offsetX
-  mouseStatus.value.end.y = e.offsetY
+  mouseStatus.end.x = e.offsetX
+  mouseStatus.end.y = e.offsetY
+  mouseStatus.isDragging = false
+  drawRects.push(<Rect>{
+    startX: mouseStatus.start.x,
+    startY: mouseStatus.start.y,
+    endX: mouseStatus.end.x,
+    endY: mouseStatus.end.y,
+  })
 }
 const mousemove = (e: MouseEvent) => {
-  mouseStatus.value.current.x = e.offsetX
-  mouseStatus.value.current.y = e.offsetY
+  mouseStatus.current.x = e.offsetX
+  mouseStatus.current.y = e.offsetY
 }
 </script>
 
@@ -73,17 +120,17 @@ const mousemove = (e: MouseEvent) => {
     <button @click="download">download</button>
   </div>
 
-  <div id="canvas_container">
-    <canvas id="canvas" ref="canvas"
-            @mousedown="mousedown"
-            @mouseup="mouseup"
-            @mousemove="mousemove"
-    ></canvas>
-  </div>
+  <canvas id="canvas" ref="canvas"
+          @mousedown="mousedown"
+          @mouseup="mouseup"
+          @mousemove="mousemove"
+          width="800"
+  ></canvas>
 </template>
 
 <style scoped>
 #canvas {
-  width: 500px;
+  width: 800px;
+  background: gray;
 }
 </style>
