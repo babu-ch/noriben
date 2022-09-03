@@ -17,18 +17,26 @@ interface Rect {
 }
 const drawRects: Rect[] = [];
 
+const pdfStatus = {
+  page: <any>null,
+  renderContext: <any>null
+}
+
 onMounted(() => {
   anim();
 })
-function anim() {
+async function anim() {
   const canvasContext = canvas.value.getContext("2d");
   if (!canvasContext) {
     return
   }
-  requestAnimationFrame(anim);
 
-  canvasContext.fillStyle = "rgba(0,0,0,0.05)";
+  canvasContext.fillStyle = "rgba(0,0,0,0)";
   canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
+
+  if (pdfStatus.page) {
+    await pdfStatus.page.render(pdfStatus.renderContext).promise
+  }
 
   canvasContext.fillStyle = "rgb(0, 0, 255)";
   if (mouseStatus.isDragging) {
@@ -42,6 +50,7 @@ function anim() {
   drawRects.forEach((rect) => {
     canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
   })
+  requestAnimationFrame(anim)
 }
 
 const onFileChange = async (e: Event) => {
@@ -59,19 +68,20 @@ const onFileChange = async (e: Event) => {
 
   const pdf = await task.promise
 
-  await renderPdf(pdf)
+  await setPdfStatus(pdf)
 }
 
-const renderPdf = async (pdf: any) => {
+const setPdfStatus = async (pdf: any) => {
   const canvasContext = canvas.value.getContext("2d");
   const page = await pdf.getPage(1);
-  const viewport = page.getViewport({scale: 1});
+  const viewport = page.getViewport({scale: canvas.value.width / page.getViewport({scale: 1}).width})
 
   canvas.value.height = viewport.height;
-  canvas.value.width = viewport.width;
 
-  const renderContext = { canvasContext: canvasContext, viewport };
-  await page.render(renderContext);
+  const renderContext = { canvasContext: canvasContext, viewport }
+
+  pdfStatus.page = page
+  pdfStatus.renderContext = renderContext
 }
 
 const clear = () => {
