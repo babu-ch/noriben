@@ -38,7 +38,7 @@ async function anim() {
     await pdfStatus.page.render(pdfStatus.renderContext).promise
   }
 
-  canvasContext.fillStyle = "rgb(0, 0, 255)";
+  canvasContext.fillStyle = "rgb(0, 0, 0)";
   if (mouseStatus.isDragging) {
     const startX = mouseStatus.start.x
     const startY = mouseStatus.start.y
