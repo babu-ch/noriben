@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
+import {onMounted, ref} from 'vue'
 
-const generatedPng = ref("")
 const isFileSelected = ref(false)
-const isCapture = ref(false)
-const pdfImage = ref(<HTMLImageElement>{})
+const generatedPngDataURL = ref("") // 最終的に出力するpng
+const isCapture = ref(false) // pngに変換するときのflg
+const pdfImage = ref(new Image()) // 読み込んだpdfを画像にしたやつ
 const canvas = ref(<HTMLCanvasElement>{})
 const mouseStatus = {
   start: {x: 0, y: 0},
   current: {x: 0, y: 0},
   isDragging: false
 }
+// 矩形描画用
 interface Rect {
   startX: number;
   startY: number;
@@ -18,10 +19,6 @@ interface Rect {
   endY: number;
 }
 const drawRects: Rect[] = [];
-const pdfStatus = {
-  page: <any>null,
-  renderContext: <any>null
-}
 
 onMounted(() => {
   anim();
@@ -54,9 +51,11 @@ async function anim() {
   drawRects.forEach((rect) => {
     canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
   })
+  // クリックハンドラでtoDataURLをするとどのタイミングでtoDataURLされるかわからない
+  // 不完全な画像になるため描画処理の最後でoutputする
   if (isCapture.value) {
     isCapture.value = false
-    generatedPng.value = canvas.value.toDataURL("image/png")
+    generatedPngDataURL.value = canvas.value.toDataURL("image/png")
   }
   requestAnimationFrame(anim);
 }
@@ -80,14 +79,15 @@ const onFileChange = async (e: Event) => {
 
   const pdf = await task.promise
 
-  await setPdfStatus(pdf)
+  await setPdfImage(pdf)
 }
 
 /**
- * pdfStatusの更新
+ * pdfをcanvasにrenderして画像として持っておく
+ * 毎frame renderしたりすると重いファイルでチラついたので
  * @param pdf
  */
-const setPdfStatus = async (pdf: any) => {
+const setPdfImage = async (pdf: any) => {
   const canvasContext = canvas.value.getContext("2d");
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({scale: canvas.value.width / page.getViewport({scale: 1}).width})
@@ -96,24 +96,19 @@ const setPdfStatus = async (pdf: any) => {
 
   const renderContext = { canvasContext: canvasContext, viewport }
 
-  pdfStatus.page = page
-  pdfStatus.renderContext = renderContext
-  await pdfStatus.page.render(pdfStatus.renderContext).promise
+  await page.render(renderContext).promise
 
-  const image = new Image();
-  image.src = canvas.value.toDataURL("image/png")
-  pdfImage.value = image
+  pdfImage.value.src = canvas.value.toDataURL("image/png")
 }
 
 /**
  * いろいろreset
  */
 const reset = () => {
-  generatedPng.value = ""
+  generatedPngDataURL.value = ""
   isFileSelected.value = false
   drawRects.splice(0)
-  pdfStatus.page = null
-  pdfStatus.renderContext = null
+  pdfImage.value.src = ""
 }
 
 /**
@@ -160,11 +155,11 @@ const mousemove = (e: MouseEvent) => {
     <button @click="isCapture = true">to png</button>
   </div>
 
-  <div v-if="generatedPng.length">
+  <div v-if="generatedPngDataURL.length">
     <p>↓PNG↓</p>
-    <img :src="generatedPng" alt="">
+    <img :src="generatedPngDataURL" alt="">
   </div>
-  <canvas id="canvas" ref="canvas" v-show="!generatedPng.length && isFileSelected"
+  <canvas id="canvas" ref="canvas" v-show="!generatedPngDataURL.length && isFileSelected"
           @mousedown="mousedown"
           @mouseup="mouseup"
           @mousemove="mousemove"
