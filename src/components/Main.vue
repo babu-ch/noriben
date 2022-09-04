@@ -88,7 +88,7 @@ const onFileChange = async (e: Event) => {
  * 毎frame renderしたりすると重いファイルでチラついたので
  * @param pdf
  */
-const setPdfImage = async (pdf: PDFDocumentProxy) => {
+const setPdfImage = async (pdf: pdfjsLib.PDFDocumentProxy) => {
   const canvasContext = canvas.value.getContext("2d")
   const page = await pdf.getPage(1)
   const viewport = page.getViewport({scale: canvas.value.width / page.getViewport({scale: 1}).width})
