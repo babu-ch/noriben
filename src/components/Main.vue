@@ -147,7 +147,7 @@ const mousemove = (e: MouseEvent) => {
 
 <template>
   <div v-if="!isFileSelected">
-    <input type="file" @change="onFileChange">
+    <input type="file" @change="onFileChange" accept=".pdf">
   </div>
   <div v-else>
     <button @click="reset">reset</button>
