@@ -4,6 +4,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 const generatedPng = ref("")
 const isFileSelected = ref(false)
 const isCapture = ref(false)
+const pdfImage = ref(<HTMLImageElement>{})
 const canvas = ref(<HTMLCanvasElement>{})
 const mouseStatus = {
   start: {x: 0, y: 0},
@@ -37,8 +38,8 @@ async function anim() {
   canvasContext.fillStyle = "rgba(0,0,0,0)";
   canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
 
-  if (pdfStatus.page) {
-    await pdfStatus.page.render(pdfStatus.renderContext).promise
+  if (pdfImage.value.src) {
+    canvasContext.drawImage(pdfImage.value, 0, 0)
   }
 
   canvasContext.fillStyle = "rgb(0, 0, 0)";
@@ -97,6 +98,11 @@ const setPdfStatus = async (pdf: any) => {
 
   pdfStatus.page = page
   pdfStatus.renderContext = renderContext
+  await pdfStatus.page.render(pdfStatus.renderContext).promise
+
+  const image = new Image();
+  image.src = canvas.value.toDataURL("image/png")
+  pdfImage.value = image
 }
 
 /**
