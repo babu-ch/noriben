@@ -111,13 +111,6 @@ const reset = () => {
 }
 
 /**
- * png生成するためにisCapture=trueに
- */
-const toPng = () => {
-  isCapture.value = true
-}
-
-/**
  * mouseStatusの更新
  * @param e
  */
@@ -158,7 +151,7 @@ const mousemove = (e: MouseEvent) => {
   </div>
   <div v-else>
     <button @click="reset">reset</button>
-    <button @click="toPng">to png</button>
+    <button @click="isCapture = true">to png</button>
   </div>
 
   <div v-if="generatedPng.length">
