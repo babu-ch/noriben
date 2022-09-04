@@ -29,10 +29,7 @@ onMounted(() => { anim() })
  * 描画処理main
  */
 const anim = async () => {
-  const canvasContext = canvas.value.getContext("2d")
-  if (!canvasContext) {
-    return
-  }
+  const canvasContext = canvas.value.getContext("2d")!
   canvasContext.fillStyle = "rgba(0,0,0,0)"
   canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
 
@@ -89,14 +86,13 @@ const onFileChange = async (e: Event) => {
  * @param pdf
  */
 const setPdfImage = async (pdf: pdfjsLib.PDFDocumentProxy) => {
-  const canvasContext = canvas.value.getContext("2d")
+  const canvasContext = canvas.value.getContext("2d")!
   const page = await pdf.getPage(1)
   const viewport = page.getViewport({scale: canvas.value.width / page.getViewport({scale: 1}).width})
 
   canvas.value.height = viewport.height
 
-  const renderContext = { canvasContext: canvasContext, viewport }
-
+  const renderContext = { canvasContext, viewport }
   await page.render(renderContext).promise
 
   pdfImage.value.src = canvas.value.toDataURL("image/png")
