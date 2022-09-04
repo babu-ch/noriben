@@ -30,7 +30,8 @@ async function anim() {
   if (!canvasContext) {
     return
   }
-  resetCanvas()
+  canvasContext.fillStyle = "rgba(0,0,0,0)";
+  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
 
   if (pdfStatus.page) {
     await pdfStatus.page.render(pdfStatus.renderContext).promise
@@ -49,15 +50,6 @@ async function anim() {
     canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
   })
   requestAnimationFrame(anim)
-}
-
-const resetCanvas = () => {
-  const canvasContext = canvas.value.getContext("2d");
-  if (!canvasContext) {
-    return
-  }
-  canvasContext.fillStyle = "rgba(0,0,0,0)";
-  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
 }
 
 const onFileChange = async (e: Event) => {
