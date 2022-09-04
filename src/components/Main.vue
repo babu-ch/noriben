@@ -13,33 +13,31 @@ const mouseStatus = {
 }
 // 矩形描画用
 interface Rect {
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
+  startX: number
+  startY: number
+  endX: number
+  endY: number
 }
-const drawRects: Rect[] = [];
+const drawRects: Rect[] = []
 
-onMounted(() => {
-  anim();
-})
+onMounted(() => { anim() })
 
 /**
  * 描画処理main
  */
-async function anim() {
-  const canvasContext = canvas.value.getContext("2d");
+const anim = async () => {
+  const canvasContext = canvas.value.getContext("2d")
   if (!canvasContext) {
     return
   }
-  canvasContext.fillStyle = "rgba(0,0,0,0)";
-  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height);
+  canvasContext.fillStyle = "rgba(0,0,0,0)"
+  canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
 
   if (pdfImage.value.src) {
     canvasContext.drawImage(pdfImage.value, 0, 0)
   }
 
-  canvasContext.fillStyle = "rgb(0, 0, 0)";
+  canvasContext.fillStyle = "rgb(0, 0, 0)"
   if (mouseStatus.isDragging) {
     const startX = mouseStatus.start.x
     const startY = mouseStatus.start.y
@@ -57,7 +55,7 @@ async function anim() {
     isCapture.value = false
     generatedPngDataURL.value = canvas.value.toDataURL("image/png")
   }
-  requestAnimationFrame(anim);
+  requestAnimationFrame(anim)
 }
 
 /**
@@ -88,11 +86,11 @@ const onFileChange = async (e: Event) => {
  * @param pdf
  */
 const setPdfImage = async (pdf: any) => {
-  const canvasContext = canvas.value.getContext("2d");
-  const page = await pdf.getPage(1);
+  const canvasContext = canvas.value.getContext("2d")
+  const page = await pdf.getPage(1)
   const viewport = page.getViewport({scale: canvas.value.width / page.getViewport({scale: 1}).width})
 
-  canvas.value.height = viewport.height;
+  canvas.value.height = viewport.height
 
   const renderContext = { canvasContext: canvasContext, viewport }
 
