@@ -17,7 +17,6 @@ interface Rect {
   endY: number;
 }
 const drawRects: Rect[] = [];
-
 const pdfStatus = {
   page: <any>null,
   renderContext: <any>null
@@ -26,6 +25,10 @@ const pdfStatus = {
 onMounted(() => {
   anim();
 })
+
+/**
+ * 描画処理main
+ */
 async function anim() {
   const canvasContext = canvas.value.getContext("2d");
   if (!canvasContext) {
@@ -57,6 +60,10 @@ async function anim() {
   requestAnimationFrame(anim);
 }
 
+/**
+ * ファイル読み込み
+ * @param e
+ */
 const onFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
   if (!target.files || !target.files.length) {
@@ -75,6 +82,10 @@ const onFileChange = async (e: Event) => {
   await setPdfStatus(pdf)
 }
 
+/**
+ * pdfStatusの更新
+ * @param pdf
+ */
 const setPdfStatus = async (pdf: any) => {
   const canvasContext = canvas.value.getContext("2d");
   const page = await pdf.getPage(1);
@@ -88,6 +99,9 @@ const setPdfStatus = async (pdf: any) => {
   pdfStatus.renderContext = renderContext
 }
 
+/**
+ * いろいろreset
+ */
 const reset = () => {
   generatedPng.value = ""
   isFileSelected.value = false
@@ -96,10 +110,17 @@ const reset = () => {
   pdfStatus.renderContext = null
 }
 
+/**
+ * png生成するためにisCapture=trueに
+ */
 const toPng = () => {
   isCapture.value = true
 }
 
+/**
+ * mouseStatusの更新
+ * @param e
+ */
 const mousedown = (e: MouseEvent) => {
   mouseStatus.isDragging = true
   mouseStatus.start.x = e.offsetX
@@ -107,6 +128,11 @@ const mousedown = (e: MouseEvent) => {
   mouseStatus.current.x = e.offsetX
   mouseStatus.current.y = e.offsetY
 }
+/**
+ * mouseStatusの更新
+ * drawRectsにpush
+ * @param e
+ */
 const mouseup = (e: MouseEvent) => {
   mouseStatus.isDragging = false
   drawRects.push(<Rect>{
@@ -116,6 +142,10 @@ const mouseup = (e: MouseEvent) => {
     endY: e.offsetY,
   })
 }
+/**
+ * mouseStatusの更新
+ * @param e
+ */
 const mousemove = (e: MouseEvent) => {
   mouseStatus.current.x = e.offsetX
   mouseStatus.current.y = e.offsetY
