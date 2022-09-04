@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onMounted, ref} from "vue"
+import * as pdfjsLib from "pdfjs-dist"
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = "../../node_modules/pdfjs-dist/build/pdf.worker.js"
 
 const isFileSelected = ref(false)
 const generatedPngDataURL = ref("") // 最終的に出力するpng
