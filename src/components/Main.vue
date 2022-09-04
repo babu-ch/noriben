@@ -3,6 +3,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 
 const generatedPng = ref("")
 const isFileSelected = ref(false)
+const isCapture = ref(false)
 const canvas = ref(<HTMLCanvasElement>{})
 const mouseStatus = {
   start: {x: 0, y: 0},
@@ -49,7 +50,11 @@ async function anim() {
   drawRects.forEach((rect) => {
     canvasContext.fillRect( rect.startX, rect.startY, rect.endX - rect.startX, rect.endY - rect.startY)
   })
-  requestAnimationFrame(anim)
+  if (isCapture.value) {
+    isCapture.value = false
+    generatedPng.value = canvas.value.toDataURL("image/png")
+  }
+  requestAnimationFrame(anim);
 }
 
 const onFileChange = async (e: Event) => {
@@ -92,7 +97,7 @@ const reset = () => {
 }
 
 const toPng = () => {
-  generatedPng.value = canvas.value.toDataURL("image/png")
+  isCapture.value = true
 }
 
 const mousedown = (e: MouseEvent) => {
