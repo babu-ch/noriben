@@ -3,7 +3,7 @@ import {onMounted, ref} from "vue"
 import * as pdfjsLib from "pdfjs-dist"
 import PdfJsWorker from 'pdfjs-dist/build/pdf.worker.js?worker'
 
-const CMAP_URL = new URL("../../node_modules/pdfjs-dist/cmaps/", import.meta.url).href
+const CMAP_URL = import.meta.env.DEV ? "../../node_modules/pdfjs-dist/cmaps/" : "./assets/cmaps/"
 
 pdfjsLib.GlobalWorkerOptions.workerPort = new PdfJsWorker()
 
@@ -76,7 +76,6 @@ const onFileChange = async (e: Event) => {
 
   const url = URL.createObjectURL(file)
 
-  console.error(CMAP_URL)
   const task = await pdfjsLib.getDocument({url, cMapUrl: CMAP_URL, cMapPacked: true, useWorkerFetch: false})
 
   const pdf = await task.promise
